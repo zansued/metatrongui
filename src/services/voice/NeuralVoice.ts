@@ -66,30 +66,46 @@ class NeuralVoiceService {
 
       if (!audioBlob) {
         console.log('[NeuralVoice] Requesting TTS:', { voice, speed, textLength: cleaned.length });
-        const res = await fetch(POLLINATIONS_CONFIG.ttsUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${POLLINATIONS_CONFIG.apiKey}`,
-          },
-          body: JSON.stringify({
-            model: POLLINATIONS_CONFIG.defaultTtsModel,
-            input: cleaned,
-            voice: voice,
-            speed: speed,
-            response_format: 'mp3',
-          }),
-        });
 
-        if (!res.ok) {
-          const errText = await res.text().catch(() => '');
-          throw new Error(`TTS API ${res.status}: ${errText}`);
+        const maxRetries = 3;
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+          const res = await fetch(POLLINATIONS_CONFIG.ttsUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${POLLINATIONS_CONFIG.apiKey}`,
+            },
+            body: JSON.stringify({
+              model: POLLINATIONS_CONFIG.defaultTtsModel,
+              input: cleaned,
+              voice: voice,
+              speed: speed,
+              response_format: 'mp3',
+            }),
+          });
+
+          if (res.status === 429) {
+            const waitMs = Math.min(2000 * (attempt + 1), 6000);
+            console.warn(`[NeuralVoice] Rate limited (429), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+            await new Promise(r => setTimeout(r, waitMs));
+            continue;
+          }
+
+          if (!res.ok) {
+            const errText = await res.text().catch(() => '');
+            throw new Error(`TTS API ${res.status}: ${errText}`);
+          }
+          audioBlob = await res.blob();
+          console.log('[NeuralVoice] Got audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
+
+          if (audioBlob.size < 100) {
+            throw new Error('Audio blob too small, likely empty response');
+          }
+          break;
         }
-        audioBlob = await res.blob();
-        console.log('[NeuralVoice] Got audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
 
-        if (audioBlob.size < 100) {
-          throw new Error('Audio blob too small, likely empty response');
+        if (!audioBlob) {
+          throw new Error('TTS API rate limited after retries');
         }
 
         // FIFO eviction
