@@ -5,7 +5,7 @@ export const POLLINATIONS_CONFIG = {
   baseUrl: 'https://gen.pollinations.ai',
   textUrl: 'https://gen.pollinations.ai/v1/chat/completions',
   ttsUrl: 'https://gen.pollinations.ai/v1/audio/speech',
-  defaultVoice: 'nova',
+  defaultVoice: 'coral',
   defaultChatModel: 'openai',
-  defaultTtsModel: 'elevenlabs',
+  defaultTtsModel: 'openai-audio',
 } as const;
