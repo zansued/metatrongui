@@ -83,6 +83,7 @@ class NeuralVoiceService {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${POLLINATIONS_CONFIG.apiKey}`,
             },
             body: JSON.stringify({
               model: POLLINATIONS_CONFIG.defaultTtsModel,
