@@ -67,13 +67,19 @@ class NeuralVoiceService {
       if (!audioBlob) {
         console.log('[NeuralVoice] Requesting TTS:', { voice, speed, textLength: cleaned.length });
 
-        const maxRetries = 3;
+        const maxRetries = 4;
         for (let attempt = 0; attempt < maxRetries; attempt++) {
+          // Wait before request on retries (exponential backoff)
+          if (attempt > 0) {
+            const waitMs = Math.min(3000 * Math.pow(2, attempt - 1), 15000);
+            console.warn(`[NeuralVoice] Rate limited, waiting ${waitMs}ms before retry ${attempt + 1}/${maxRetries}`);
+            await new Promise(r => setTimeout(r, waitMs));
+          }
+
           const res = await fetch(POLLINATIONS_CONFIG.ttsUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${POLLINATIONS_CONFIG.apiKey}`,
             },
             body: JSON.stringify({
               model: POLLINATIONS_CONFIG.defaultTtsModel,
@@ -85,9 +91,7 @@ class NeuralVoiceService {
           });
 
           if (res.status === 429) {
-            const waitMs = Math.min(2000 * (attempt + 1), 6000);
-            console.warn(`[NeuralVoice] Rate limited (429), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
-            await new Promise(r => setTimeout(r, waitMs));
+            console.warn(`[NeuralVoice] Rate limited (429) attempt ${attempt + 1}/${maxRetries}`);
             continue;
           }
 
