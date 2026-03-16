@@ -7,5 +7,5 @@ export const POLLINATIONS_CONFIG = {
   ttsUrl: 'https://gen.pollinations.ai/v1/audio/speech',
   defaultVoice: 'ash',
   defaultChatModel: 'openai',
-  defaultTtsModel: 'qwen3-tts',
+  defaultTtsModel: 'elevenlabs',
 } as const;
