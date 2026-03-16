@@ -1,3 +1,5 @@
+import { POLLINATIONS_CONFIG } from '../config/pollinations';
+
 export async function chatWithMetatron(message: string, contextNodes: any[], history: {role: string, content: string}[] = []) {
   const nodeContext = contextNodes.map(n => `- ${n.name} (${n.type})`).join('\n');
 
