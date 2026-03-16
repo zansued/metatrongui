@@ -117,6 +117,12 @@ export function RegistryPanel() {
                         </div>
                         <h3 className="text-sm font-semibold text-foreground truncate">{node.name}</h3>
                         <span className={`text-[10px] font-mono ${color}`}>{node.type}</span>
+                        
+                        {node.metadata?.description && (
+                          <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">
+                            {node.metadata.description}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -128,11 +134,26 @@ export function RegistryPanel() {
                       </div>
                     </div>
 
-                    {/* Hover reveal */}
-                    <div className="mt-2 max-h-0 group-hover:max-h-10 overflow-hidden transition-all">
-                      <p className="text-[10px] text-celestial-neon font-mono">
-                        Nível de Sincronia: 100% (Metatron Ledger)
-                      </p>
+                    {/* Hover reveal - extra metadata */}
+                    <div className="mt-2 max-h-0 group-hover:max-h-24 overflow-hidden transition-all">
+                      {node.metadata?.skills && Array.isArray(node.metadata.skills) && (
+                        <div className="flex flex-wrap gap-1 mb-1">
+                          {node.metadata.skills.slice(0, 4).map((skill: string, i: number) => (
+                            <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full border ${border} ${color} font-mono`}>
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {node.metadata?.architecture && (
+                        <p className="text-[9px] text-muted-foreground font-mono">🏗️ {node.metadata.architecture}</p>
+                      )}
+                      {node.metadata?.domain && (
+                        <p className="text-[9px] text-muted-foreground font-mono">🌐 {node.metadata.domain}</p>
+                      )}
+                      {!node.metadata?.description && !node.metadata?.skills && !node.metadata?.architecture && !node.metadata?.domain && (
+                        <p className="text-[10px] text-celestial-neon font-mono">Sincronia: 100% (Metatron Ledger)</p>
+                      )}
                     </div>
                   </div>
                 </motion.div>
