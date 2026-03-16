@@ -3,6 +3,8 @@
  * TTS via Pollinations API (gen.pollinations.ai) with in-memory cache
  */
 
+import { POLLINATIONS_CONFIG } from '../../config/pollinations';
+
 export interface TTSOptions {
   voice?: string;
   model?: string;
@@ -55,7 +57,7 @@ class NeuralVoiceService {
     }
     window.speechSynthesis.cancel();
 
-    const voice = options.voice || 'alloy';
+    const voice = options.voice || POLLINATIONS_CONFIG.defaultVoice;
     const speed = options.speed || 1;
     const cacheKey = simpleHash(`${cleaned}|${voice}|${speed}`);
 
@@ -63,12 +65,14 @@ class NeuralVoiceService {
       let audioBlob = this.cache.get(cacheKey);
 
       if (!audioBlob) {
-        // Use the new gen.pollinations.ai unified endpoint
-        const res = await fetch('https://gen.pollinations.ai/v1/audio/speech', {
+        const res = await fetch(POLLINATIONS_CONFIG.ttsUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${POLLINATIONS_CONFIG.apiKey}`,
+          },
           body: JSON.stringify({
-            model: 'tts-1',
+            model: POLLINATIONS_CONFIG.defaultTtsModel,
             input: cleaned,
             voice: voice,
             speed: speed,
