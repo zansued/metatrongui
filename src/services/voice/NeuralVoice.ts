@@ -47,8 +47,11 @@ class NeuralVoiceService {
   private cache = new Map<string, Blob>();
 
   async speak(text: string, options: TTSOptions = {}): Promise<void> {
-    const cleaned = stripMarkdown(text).slice(0, 800);
+    const cleaned = stripMarkdown(text).slice(0, 200);
     if (!cleaned) return;
+
+    // Small delay to avoid hitting rate limits right after chat API call
+    await new Promise(r => setTimeout(r, 1500));
 
     // Stop any playing audio
     if (this.currentAudio) {
