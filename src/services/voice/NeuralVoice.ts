@@ -3,6 +3,8 @@
  * TTS via Pollinations API (gen.pollinations.ai) with in-memory cache
  */
 
+import { POLLINATIONS_CONFIG } from '../config/pollinations';
+
 export interface TTSOptions {
   voice?: string;
   model?: string;

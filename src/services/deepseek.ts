@@ -13,12 +13,14 @@ export async function chatWithMetatron(message: string, contextNodes: any[], his
   ];
 
   try {
-    // Use Pollinations unified text API (free, no key required for anonymous)
-    const response = await fetch('https://text.pollinations.ai/openai', {
+    const response = await fetch(POLLINATIONS_CONFIG.textUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${POLLINATIONS_CONFIG.apiKey}`,
+      },
       body: JSON.stringify({
-        model: 'openai',
+        model: POLLINATIONS_CONFIG.defaultChatModel,
         messages,
         temperature: 0.8,
         max_tokens: 1024,
