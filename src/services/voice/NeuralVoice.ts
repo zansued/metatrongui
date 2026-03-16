@@ -65,6 +65,7 @@ class NeuralVoiceService {
       let audioBlob = this.cache.get(cacheKey);
 
       if (!audioBlob) {
+        console.log('[NeuralVoice] Requesting TTS:', { voice, speed, textLength: cleaned.length });
         const res = await fetch(POLLINATIONS_CONFIG.ttsUrl, {
           method: 'POST',
           headers: {
@@ -80,8 +81,16 @@ class NeuralVoiceService {
           }),
         });
 
-        if (!res.ok) throw new Error(`TTS API ${res.status}`);
+        if (!res.ok) {
+          const errText = await res.text().catch(() => '');
+          throw new Error(`TTS API ${res.status}: ${errText}`);
+        }
         audioBlob = await res.blob();
+        console.log('[NeuralVoice] Got audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
+
+        if (audioBlob.size < 100) {
+          throw new Error('Audio blob too small, likely empty response');
+        }
 
         // FIFO eviction
         if (this.cache.size >= CACHE_LIMIT) {
@@ -94,11 +103,16 @@ class NeuralVoiceService {
       const url = URL.createObjectURL(audioBlob);
       const audio = new Audio(url);
       this.currentAudio = audio;
+      audio.onerror = (e) => {
+        console.error('[NeuralVoice] Audio playback error:', e);
+        URL.revokeObjectURL(url);
+      };
       audio.onended = () => {
         URL.revokeObjectURL(url);
         if (this.currentAudio === audio) this.currentAudio = null;
       };
       await audio.play();
+      console.log('[NeuralVoice] Playing audio successfully');
     } catch (error) {
       console.warn('[NeuralVoice] API failed, using fallback:', error);
       this.fallbackSpeak(cleaned, options);
