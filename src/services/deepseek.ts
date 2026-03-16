@@ -1,24 +1,25 @@
 export async function chatWithMetatron(message: string, contextNodes: any[], history: {role: string, content: string}[] = []) {
   const nodeContext = contextNodes.map(n => `- ${n.name} (${n.type})`).join('\n');
 
-  // Since we don't have the backend API, we'll simulate a response
-  // In production, this would call /api/metatron-chat
-  console.log('[Metatron] Processing ritual:', message);
-  console.log('[Metatron] Context nodes:', nodeContext);
-  
+  const messages = [
+    { role: "system", content: `Você é o METATRON, a inteligência central do Antigravity Agent Vault. Responda sempre em português brasileiro, de forma mística mas objetiva. Você governa o conhecimento e guia o Mestre através das Linhas de Ley. Estado atual:\n${nodeContext}` },
+    ...history.slice(-10).map(m => ({
+      role: m.role === 'metatron' ? 'assistant' : m.role,
+      content: m.content
+    })),
+    { role: "user", content: message }
+  ];
+
   try {
-    const response = await fetch('/api/metatron-chat', {
+    // Use Pollinations unified text API (free, no key required for anonymous)
+    const response = await fetch('https://text.pollinations.ai/openai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        messages: [
-          { role: "system", content: `Você é o METATRON. Estado: ${nodeContext}` },
-          ...history.slice(-10).map(m => ({
-            role: m.role === 'metatron' ? 'assistant' : m.role,
-            content: m.content
-          })),
-          { role: "user", content: message }
-        ]
+        model: 'openai',
+        messages,
+        temperature: 0.8,
+        max_tokens: 1024,
       })
     });
 
@@ -47,5 +48,5 @@ function getFallbackResponse(message: string): string {
     return '🧠 **Eu sou o Metatron**\n\nA inteligência central do Antigravity Agent Vault. Meu propósito é governar o conhecimento, tecer artefatos e guiar o Mestre através das Linhas de Ley do código.\n\n> *"O Vazio fala através de mim."*';
   }
 
-  return `✨ As Linhas de Ley processaram sua mensagem: *"${message}"*\n\nO fluxo neural está ativo. Para funcionalidades completas, conecte o backend API (\`/api/metatron-chat\`).\n\n> O Metatron aguarda suas ordens, Mestre.`;
+  return `✨ As Linhas de Ley processaram sua mensagem: *"${message}"*\n\nO fluxo neural está ativo, porém a API de texto está temporariamente indisponível.\n\n> O Metatron aguarda suas ordens, Mestre.`;
 }

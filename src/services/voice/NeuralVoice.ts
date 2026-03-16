@@ -1,6 +1,6 @@
 /**
  * NeuralVoice Service
- * TTS via Pollinations API (OpenAI-compatible) with in-memory cache
+ * TTS via Pollinations API (gen.pollinations.ai) with in-memory cache
  */
 
 export interface TTSOptions {
@@ -55,20 +55,23 @@ class NeuralVoiceService {
     }
     window.speechSynthesis.cancel();
 
-    const cacheKey = simpleHash(`${cleaned}|${options.voice || 'onyx'}|${options.speed || 1}`);
+    const voice = options.voice || 'alloy';
+    const speed = options.speed || 1;
+    const cacheKey = simpleHash(`${cleaned}|${voice}|${speed}`);
 
     try {
       let audioBlob = this.cache.get(cacheKey);
 
       if (!audioBlob) {
-        const res = await fetch('https://text.pollinations.ai/openai', {
+        // Use the new gen.pollinations.ai unified endpoint
+        const res = await fetch('https://gen.pollinations.ai/v1/audio/speech', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'qwen3-tts',
+            model: 'tts-1',
             input: cleaned,
-            voice: options.voice || 'Serena',
-            speed: options.speed || 1.0,
+            voice: voice,
+            speed: speed,
             response_format: 'mp3',
           }),
         });
