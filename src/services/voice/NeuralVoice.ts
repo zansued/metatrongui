@@ -65,9 +65,9 @@ class NeuralVoiceService {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'openai-audio',
+            model: 'qwen3-tts',
             input: cleaned,
-            voice: options.voice || 'onyx',
+            voice: options.voice || 'Serena',
             speed: options.speed || 1.0,
             response_format: 'mp3',
           }),
