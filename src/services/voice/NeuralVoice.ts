@@ -47,8 +47,11 @@ class NeuralVoiceService {
   private cache = new Map<string, Blob>();
 
   async speak(text: string, options: TTSOptions = {}): Promise<void> {
-    const cleaned = stripMarkdown(text).slice(0, 800);
+    const cleaned = stripMarkdown(text).slice(0, 200);
     if (!cleaned) return;
+
+    // Small delay to avoid hitting rate limits right after chat API call
+    await new Promise(r => setTimeout(r, 1500));
 
     // Stop any playing audio
     if (this.currentAudio) {
@@ -65,29 +68,24 @@ class NeuralVoiceService {
       let audioBlob = this.cache.get(cacheKey);
 
       if (!audioBlob) {
-        console.log('[NeuralVoice] Requesting TTS:', { voice, speed, textLength: cleaned.length });
+        console.log('[NeuralVoice] Requesting TTS via GET:', { voice, textLength: cleaned.length });
+
+        // Use GET endpoint which may have different rate limits
+        const encodedText = encodeURIComponent(cleaned);
+        const ttsGetUrl = `https://gen.pollinations.ai/audio/${encodedText}?voice=${voice}&model=${POLLINATIONS_CONFIG.defaultTtsModel}&key=${POLLINATIONS_CONFIG.apiKey}`;
 
         const maxRetries = 3;
         for (let attempt = 0; attempt < maxRetries; attempt++) {
-          const res = await fetch(POLLINATIONS_CONFIG.ttsUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${POLLINATIONS_CONFIG.apiKey}`,
-            },
-            body: JSON.stringify({
-              model: POLLINATIONS_CONFIG.defaultTtsModel,
-              input: cleaned,
-              voice: voice,
-              speed: speed,
-              response_format: 'mp3',
-            }),
-          });
+          if (attempt > 0) {
+            const waitMs = Math.min(3000 * Math.pow(2, attempt - 1), 12000);
+            console.warn(`[NeuralVoice] Retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+            await new Promise(r => setTimeout(r, waitMs));
+          }
+
+          const res = await fetch(ttsGetUrl);
 
           if (res.status === 429) {
-            const waitMs = Math.min(2000 * (attempt + 1), 6000);
-            console.warn(`[NeuralVoice] Rate limited (429), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
-            await new Promise(r => setTimeout(r, waitMs));
+            console.warn(`[NeuralVoice] Rate limited (429) attempt ${attempt + 1}/${maxRetries}`);
             continue;
           }
 
