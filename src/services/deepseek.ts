@@ -17,7 +17,7 @@ export async function chatWithMetatron(message: string, contextNodes: any[], his
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${POLLINATIONS_CONFIG.apiKey}`,
+        'Authorization': `Bearer ${POLLINATIONS_CONFIG.chatApiKey}`,
       },
       body: JSON.stringify({
         model: POLLINATIONS_CONFIG.defaultChatModel,
