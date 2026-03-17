@@ -68,31 +68,21 @@ class NeuralVoiceService {
       let audioBlob = this.cache.get(cacheKey);
 
       if (!audioBlob) {
-        console.log('[NeuralVoice] Requesting TTS:', { voice, speed, textLength: cleaned.length });
+        console.log('[NeuralVoice] Requesting TTS via GET:', { voice, textLength: cleaned.length });
 
-        const maxRetries = 4;
+        // Use GET endpoint which may have different rate limits
+        const encodedText = encodeURIComponent(cleaned);
+        const ttsGetUrl = `https://gen.pollinations.ai/audio/${encodedText}?voice=${voice}&model=${POLLINATIONS_CONFIG.defaultTtsModel}&key=${POLLINATIONS_CONFIG.apiKey}`;
+
+        const maxRetries = 3;
         for (let attempt = 0; attempt < maxRetries; attempt++) {
-          // Wait before request on retries (exponential backoff)
           if (attempt > 0) {
-            const waitMs = Math.min(3000 * Math.pow(2, attempt - 1), 15000);
-            console.warn(`[NeuralVoice] Rate limited, waiting ${waitMs}ms before retry ${attempt + 1}/${maxRetries}`);
+            const waitMs = Math.min(3000 * Math.pow(2, attempt - 1), 12000);
+            console.warn(`[NeuralVoice] Retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
             await new Promise(r => setTimeout(r, waitMs));
           }
 
-          const res = await fetch(POLLINATIONS_CONFIG.ttsUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${POLLINATIONS_CONFIG.apiKey}`,
-            },
-            body: JSON.stringify({
-              model: POLLINATIONS_CONFIG.defaultTtsModel,
-              input: cleaned,
-              voice: voice,
-              speed: speed,
-              response_format: 'mp3',
-            }),
-          });
+          const res = await fetch(ttsGetUrl);
 
           if (res.status === 429) {
             console.warn(`[NeuralVoice] Rate limited (429) attempt ${attempt + 1}/${maxRetries}`);
