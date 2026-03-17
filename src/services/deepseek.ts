@@ -28,10 +28,17 @@ export async function chatWithMetatron(message: string, contextNodes: any[], his
     });
 
     const data = await response.json();
+    console.log('[Metatron Chat] Response status:', response.status, 'choices:', data.choices?.length);
     if (!response.ok || !data.choices?.length) {
+      console.warn('[Metatron Chat] Bad response:', JSON.stringify(data).slice(0, 500));
       return getFallbackResponse(message);
     }
-    return data.choices[0].message.content;
+    const content = data.choices[0].message?.content;
+    if (!content || content.trim() === '') {
+      console.warn('[Metatron Chat] Empty content received');
+      return getFallbackResponse(message);
+    }
+    return content;
   } catch {
     return getFallbackResponse(message);
   }
