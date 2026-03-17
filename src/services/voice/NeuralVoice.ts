@@ -72,7 +72,7 @@ class NeuralVoiceService {
 
         // Use GET endpoint which may have different rate limits
         const encodedText = encodeURIComponent(cleaned);
-        const ttsGetUrl = `https://gen.pollinations.ai/audio/${encodedText}?voice=${voice}&model=${POLLINATIONS_CONFIG.defaultTtsModel}&key=${POLLINATIONS_CONFIG.apiKey}`;
+        const ttsGetUrl = `https://gen.pollinations.ai/audio/${encodedText}?voice=${voice}&model=${POLLINATIONS_CONFIG.defaultTtsModel}&key=${POLLINATIONS_CONFIG.audioApiKey}`;
 
         const maxRetries = 3;
         for (let attempt = 0; attempt < maxRetries; attempt++) {
