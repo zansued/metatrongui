@@ -61,7 +61,7 @@ class NeuralVoiceService {
     window.speechSynthesis.cancel();
 
     const voice = options.voice || POLLINATIONS_CONFIG.defaultVoice;
-    const speed = options.speed || 1;
+    const speed = options.speed || 1.15;
     const cacheKey = simpleHash(`${cleaned}|${voice}|${speed}`);
 
     try {
