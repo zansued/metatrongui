@@ -28,10 +28,10 @@ graph TD
     Horizon7 <--> ExternalGit
 
     %% Styling
-    style User fill:#000,stroke:#00f,stroke-width:2px,color:#fff
+    style User fill:#eee,stroke:#00f,stroke-width:2px,color:#fff
     style Ledger fill:#1a1a1a,stroke:#4a90e2,stroke-width:2px
     style Vault fill:#1a1a1a,stroke:#7b61ff,stroke-width:2px
-    style Horizon7 fill:#0d0d0d,stroke:#00f3ff,stroke-width:2px
+    style Horizon7 fill:#eee,stroke:#00f3ff,stroke-width:2px
 ```
 
 ---
