@@ -82,34 +82,52 @@ class NeuralVoiceService {
     const cleaned = stripMarkdown(text);
     if (!cleaned) return;
 
-    this.stop(); // Stop any playing audio
+    this.stop();
     this.isStopped = false;
 
-    // Small delay to avoid hitting rate limits right after chat API call
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r => setTimeout(r, 1000));
 
     const chunks = splitIntoChunks(cleaned, CHUNK_SIZE);
     console.log(`[NeuralVoice] Split into ${chunks.length} chunks`);
 
-    for (let i = 0; i < chunks.length; i++) {
-      if (this.isStopped) {
-        console.log('[NeuralVoice] Chain stopped by user');
-        break;
+    // Prefetch first two chunks in parallel
+    const prefetchQueue = new Map<number, Promise<Blob | null>>();
+    const prefetch = (idx: number) => {
+      if (idx < chunks.length && !prefetchQueue.has(idx)) {
+        prefetchQueue.set(idx, this.fetchChunkAudio(chunks[idx], options).catch(err => {
+          console.warn(`[NeuralVoice] Prefetch ${idx} failed:`, err);
+          return null;
+        }));
       }
+    };
+
+    // Start prefetching chunk 0 and 1 immediately
+    prefetch(0);
+    prefetch(1);
+
+    for (let i = 0; i < chunks.length; i++) {
+      if (this.isStopped) break;
 
       console.log(`[NeuralVoice] Playing chunk ${i + 1}/${chunks.length} (${chunks[i].length} chars)`);
 
+      // Prefetch next chunk while current plays
+      prefetch(i + 1);
+      prefetch(i + 2);
+
       try {
-        await this.playChunk(chunks[i], options);
+        const blob = await prefetchQueue.get(i);
+        if (!blob) {
+          throw new Error('Prefetch returned null');
+        }
+        await this.playBlob(blob);
       } catch (error) {
         console.warn(`[NeuralVoice] Chunk ${i + 1} failed, using fallback:`, error);
         this.fallbackSpeak(chunks.slice(i).join(' '), options);
         break;
       }
 
-      // Small gap between chunks for natural pacing
       if (i < chunks.length - 1 && !this.isStopped) {
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 200));
       }
     }
   }
