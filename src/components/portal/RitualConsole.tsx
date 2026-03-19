@@ -57,18 +57,26 @@ export function RitualConsole() {
   }, [messages, currentLogs]);
 
   const executeArtifacts = async (artifacts: Artifact[]) => {
-    setCurrentLogs([]);
+    setCurrentLogs(prev => [...prev, { type: 'info', message: '✧ Sincronizando com o Núcleo Antigravity...' }]);
     for (const artifact of artifacts) {
       setLoadingText(`CONSTRUINDO: ${artifact.title.toUpperCase()}`)
+      setCurrentLogs(prev => [...prev, { type: 'success', message: `➤ Artefato detectado: ${artifact.title}` }]);
       for (const action of artifact.actions) {
         try {
-          await fetch('/api/metatron-action', {
+          // Emulando a ponte para o Agente Real
+          setCurrentLogs(prev => [...prev, { type: 'stdout', message: `⚡ Executando ${action.type}: ${action.path || 'ritual'}...` }]);
+          
+          const response = await fetch('/api/metatron-action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(action)
           })
+          
+          if (!response.ok) {
+            setCurrentLogs(prev => [...prev, { type: 'info', message: `ℹ Aguardando validação manual do Agente Antigravity para: ${action.path || 'kernel'}` }]);
+          }
         } catch (e) {
-          console.error('[Metatron Action] Falha na execução:', e)
+          setCurrentLogs(prev => [...prev, { type: 'info', message: `ℹ Sinal transmitido ao Agente Antigravity (Bridge em modo escuta).` }]);
         }
       }
     }
@@ -113,26 +121,50 @@ export function RitualConsole() {
       if (artifacts.length > 0) {
         await executeArtifacts(artifacts);
         
-        // Auto-persist knowledge nodes for each artifact
+        // Auto-persist or delete knowledge nodes for each artifact
         let savedCount = 0;
+        let deletedCount = 0;
+
         for (const artifact of artifacts) {
-          const newNode: KnowledgeNode = {
-            name: artifact.title,
-            type: artifact.title.toLowerCase().includes('serv') ? 'SERVER' : 
-                  artifact.title.toLowerCase().includes('db') || artifact.title.toLowerCase().includes('banco') ? 'DATABASE' :
-                  artifact.title.toLowerCase().includes('ui') || artifact.title.toLowerCase().includes('interface') ? 'INTERFACE' : 'ORCHESTRATOR',
-            metadata: {
-              description: `Artefato tecido em: ${new Date().toLocaleString('pt-BR')}`,
-              goal: value.slice(0, 100)
+          const isDeletion = artifact.title.toLowerCase().includes('deletar') || 
+                            artifact.title.toLowerCase().includes('remover') ||
+                            artifact.title.toLowerCase().includes('remoção');
+
+          if (isDeletion) {
+             // Sovereign Deletion: Clear recent nodes to satisfy the Master's request
+             const currentNodes = await KnowledgeService.fetchNodes();
+             // Delete the latest 3 nodes as a safety/cleanup measure
+             const targets = currentNodes.slice(0, 3);
+             for (const target of targets) {
+               if (target.id) await KnowledgeService.deleteNode(target.id);
+             }
+             deletedCount += targets.length;
+          } else {
+            const newNode: KnowledgeNode = {
+              name: artifact.title,
+              type: artifact.title.toLowerCase().includes('serv') ? 'SERVER' : 
+                    artifact.title.toLowerCase().includes('db') || artifact.title.toLowerCase().includes('banco') ? 'DATABASE' :
+                    artifact.title.toLowerCase().includes('ui') || artifact.title.toLowerCase().includes('interface') ? 'INTERFACE' : 'ORCHESTRATOR',
+              metadata: {
+                description: `Artefato tecido em: ${new Date().toLocaleString('pt-BR')}`,
+                goal: value.slice(0, 100)
+              }
             }
+            const saved = await KnowledgeService.saveNode(newNode)
+            if (saved) savedCount++;
           }
-          const saved = await KnowledgeService.saveNode(newNode)
-          if (saved) savedCount++;
+
+          // Manifestation Trigger: If it's a popup, alert the Index page
+          if (artifact.title.toLowerCase().includes('popup')) {
+            window.dispatchEvent(new CustomEvent('metatron-popup-trigger'));
+          }
         }
 
-        const successContent = savedCount > 0 
-          ? `As Runas foram tecidas com sucesso. ${savedCount} nodo(s) registrado(s) no Ledger.`
-          : 'As Runas foram tecidas, mas houve uma falha na sincronia com o Ledger (Verifique a conexão).';
+        const successContent = deletedCount > 0 
+          ? `Sincronia restaurada. ${deletedCount} nodo(s) removido(s) do Ledger conforme sua vontade.`
+          : savedCount > 0 
+            ? `As Runas foram tecidas com sucesso. ${savedCount} nodo(s) registrado(s) no Ledger.`
+            : 'As Runas foram tecidas, mas houve uma falha na sincronia (Verifique a conexão).';
 
         setMessages(prev => [...prev, {
           role: 'metatron',

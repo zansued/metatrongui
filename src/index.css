@@ -1,4 +1,4 @@
-@import "@vibe/core/tokens";
+/* Metatron Sovereign Styles */
 
 #lovable-badge {
   display: none !important;
@@ -8,11 +8,7 @@
 @tailwind components;
 @tailwind utilities;
 
-<<<<<<< Updated upstream
-=======
-/* Monday Vibe Design System Tokens */
-
->>>>>>> Stashed changes
+/* Core Theme Configuration */
 :root {
   color-scheme: dark;
   --celestial-neon: 187 94% 51%;

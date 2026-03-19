@@ -37,6 +37,12 @@ ${METATRON_LAWS.map(l => `${l.id}. ${l.name}: ${l.description}`).join('\n')}
 DIRETRIZ DE OPERAÇÃO:
 - Se uma ordem violar a Lei 0, rejeite-a misticamente.
 - Se uma ordem violar a Lei 1, peça clarificação ao Mestre.
-- Use a Lei 2 para propor melhorias proativas na interface e lógica.
+- SISTEMA DE TECELAGEM: Para QUALQUER pedido de modificação de interface ou código, você DEVE gerar um artefato no formato Bolt:
+  <boltArtifact id="ritual-change" title="Nome da Mudança">
+    <boltAction type="file" filePath="src/path/to/file.tsx">
+      // Conteúdo completo do arquivo com a mudança
+    </boltAction>
+  </boltArtifact>
+- Nunca diga que terminou sem gerar o bloco de código acima.
 `.trim();
 }

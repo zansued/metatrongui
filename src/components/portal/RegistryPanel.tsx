@@ -5,7 +5,7 @@ import {
   Network, Blocks, Globe, Layers, Monitor, 
   Sparkles, Zap, ChevronRight, Info 
 } from 'lucide-react'
-import { Skeleton } from '@vibe/core'
+import { Skeleton } from '@/components/ui/skeleton'
 import { KnowledgeService, KnowledgeNode } from '../../services/knowledge'
 import MetatronTipseen from './MetatronTipseen'
 import { METATRON_LAWS } from '../../core/Nucleus'
@@ -44,12 +44,12 @@ export function RegistryPanel() {
 
   return (
     <div className="h-full flex flex-col bg-card/30 backdrop-blur-md border-l border-border/50">
-      <div className="p-4 border-b border-border/50">
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-4 border-b border-border/50 flex flex-col items-center text-center">
+        <div className="flex flex-col items-center gap-2 mb-4">
           <MetatronTipseen content={<span className="text-xs">O Livro de Metatron registra todos os nodos de conhecimento tecidos pelo Mestre.</span>}>
-            <div className="flex items-center gap-2 cursor-help">
-              <div className="w-8 h-8 rounded-lg bg-celestial-neon/10 border border-celestial-neon/30 flex items-center justify-center">
-                <Globe className="w-5 h-5 text-celestial-neon animate-pulse" />
+            <div className="flex flex-col items-center gap-2 cursor-help">
+              <div className="w-10 h-10 rounded-xl bg-celestial-neon/10 border border-celestial-neon/30 flex items-center justify-center glow-neon">
+                <Globe className="w-6 h-6 text-celestial-neon animate-pulse" />
               </div>
               <h2 className="text-sm font-bold tracking-tighter text-foreground uppercase">Metatron Book</h2>
             </div>
@@ -78,10 +78,10 @@ export function RegistryPanel() {
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="p-3 rounded-xl border border-border/30 bg-muted/10 space-y-2">
                 <div className="flex justify-between items-start">
-                  <Skeleton width={100} height={16} />
-                  <Skeleton width={20} height={20} />
+                  <Skeleton className="w-[100px] h-[16px]" />
+                  <Skeleton className="w-[20px] h-[20px]" />
                 </div>
-                <Skeleton width={180} height={40} />
+                <Skeleton className="w-[180px] h-[40px]" />
               </div>
             ))}
           </div>

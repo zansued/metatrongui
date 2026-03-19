@@ -1,5 +1,10 @@
 import React, { ReactElement } from 'react'
-import { Tipseen } from '@vibe/core'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface MetatronTipseenProps {
   children: React.ReactNode
@@ -9,16 +14,17 @@ interface MetatronTipseenProps {
 
 export default function MetatronTipseen({ children, content, position = 'bottom' }: MetatronTipseenProps) {
   return (
-    <Tipseen
-      content={content}
-      position={position}
-      animationType="expand"
-      hideDelay={100}
-      showDelay={200}
-    >
-      <span className="inline-block">
-        {children}
-      </span>
-    </Tipseen>
+    <TooltipProvider>
+      <Tooltip delayDuration={200}>
+        <TooltipTrigger asChild>
+          <span className="inline-block">
+            {children}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side={position} className="bg-popover/90 backdrop-blur-md border-celestial-neon/30 text-foreground">
+          {content}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
