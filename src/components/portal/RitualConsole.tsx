@@ -10,7 +10,6 @@ import { useVoiceCommands } from '../../hooks/useVoiceCommands'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { neuralVoice } from '../../services/voice/NeuralVoice'
-import { KnowledgeService, KnowledgeNode } from '../../services/knowledge'
 
 interface RealtimeLog {
   type: 'info' | 'success' | 'stdout' | 'stderr'
@@ -48,8 +47,12 @@ export function RitualConsole() {
   useEffect(() => {
     // Fetch initial nodes from Supabase
     const fetchNodes = async () => {
-      const data = await KnowledgeService.fetchNodes()
-      if (data) setNodes(data)
+      try {
+        const { data } = await supabase.from('geminicli_knowledge_nodes').select('*')
+        if (data) setNodes(data)
+      } catch (e) {
+        console.log('[Metatron] Supabase fetch skipped:', e)
+      }
     }
     fetchNodes()
   }, [])
@@ -114,25 +117,9 @@ export function RitualConsole() {
 
       if (artifacts.length > 0) {
         await executeArtifacts(artifacts);
-        
-        // Auto-persist knowledge nodes for each artifact
-        for (const artifact of artifacts) {
-          const newNode: KnowledgeNode = {
-            name: artifact.title,
-            type: artifact.title.toLowerCase().includes('serv') ? 'SERVER' : 
-                  artifact.title.toLowerCase().includes('db') || artifact.title.toLowerCase().includes('banco') ? 'DATABASE' :
-                  artifact.title.toLowerCase().includes('ui') || artifact.title.toLowerCase().includes('interface') ? 'INTERFACE' : 'ORCHESTRATOR',
-            metadata: {
-              description: `Artefato tecido em: ${new Date().toLocaleString('pt-BR')}`,
-              goal: value.slice(0, 100)
-            }
-          }
-          await KnowledgeService.saveNode(newNode)
-        }
-
         setMessages(prev => [...prev, {
           role: 'metatron',
-          content: 'As Runas foram tecidas com sucesso. O conhecimento foi registrado no Ledger.',
+          content: 'As Runas foram tecidas com sucesso. O fluxo de dados está em tempo real.',
           timestamp: new Date(),
           artifacts,
           logs: currentLogs

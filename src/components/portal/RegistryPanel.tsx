@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
+import { supabase } from '../../lib/supabasePortal'
 import { motion, AnimatePresence } from 'framer-motion'
-import { KnowledgeService, KnowledgeNode } from '../../services/knowledge'
 import {
   Brain,
   Wrench,
@@ -15,11 +15,8 @@ import {
   Sparkles,
   Zap,
   ChevronRight,
-  Info,
-  BookOpen
+  Info
 } from 'lucide-react'
-import { Skeleton } from '@vibe/core'
-import MetatronTipseen from './MetatronTipseen'
 
 const getNodeConfig = (type: string) => {
   const normalizedType = (type || '').toUpperCase()
@@ -34,10 +31,16 @@ const getNodeConfig = (type: string) => {
     case 'DOMAIN': return { icon: Globe, color: 'text-indigo-400', border: 'border-indigo-500/30', glow: 'shadow-indigo-500/20' }
     case 'FRAMEWORK': return { icon: Layers, color: 'text-red-400', border: 'border-red-500/30', glow: 'shadow-red-500/20' }
     case 'INTERFACE': return { icon: Monitor, color: 'text-cyan-400', border: 'border-cyan-500/30', glow: 'shadow-cyan-500/20' }
-    case 'SWARM': return { icon: Network, color: 'text-celestial-neon', border: 'border-celestial-neon/30', glow: 'shadow-[0_0_15px_rgba(34,211,238,0.4)]' }
-    case 'HUB': return { icon: Globe, color: 'text-celestial-gold', border: 'border-celestial-gold/30', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.4)]' }
     default: return { icon: Sparkles, color: 'text-celestial-gold', border: 'border-celestial-gold/30', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.2)]' }
   }
+}
+
+interface KnowledgeNode {
+  id: string;
+  name: string;
+  type: string;
+  metadata?: any;
+  created_at: string;
 }
 
 export function RegistryPanel() {
@@ -46,15 +49,27 @@ export function RegistryPanel() {
 
   useEffect(() => {
     const fetchNodes = async () => {
-      const data = await KnowledgeService.fetchNodes()
-      setNodes(data)
-      setLoading(false)
+      try {
+        const { data, error } = await supabase.from('geminicli_knowledge_nodes').select('*').order('created_at', { ascending: false })
+        if (error) {
+          console.error('[RegistryPanel] Supabase error:', error.message)
+        }
+        if (data) {
+          setNodes(data)
+        }
+      } catch (err) {
+        console.error('[RegistryPanel] Fetch error:', err)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchNodes()
 
-    // Realtime channel handled via supabase directly if needed, 
-    // but KnowledgeService could also handle this. 
-    // Keeping it simple for now as RitualConsole also updates state.
+    const channel = supabase.channel('registry-sync-v2')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'geminicli_knowledge_nodes' }, fetchNodes)
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [])
 
   return (
@@ -65,12 +80,7 @@ export function RegistryPanel() {
       {/* Header Section */}
       <div className="relative p-4 border-b border-border">
         <div className="flex items-center justify-between">
-          <MetatronTipseen 
-            title="O Códice de Metatron" 
-            content="Este Ledger sincroniza em tempo real com as Linhas de Ley. Cada card representa um nodo de conhecimento tecido pela inteligência coletiva."
-          >
-            <h2 className="text-lg font-bold text-foreground tracking-tight cursor-help">Metatron Book</h2>
-          </MetatronTipseen>
+          <h2 className="text-lg font-bold text-foreground tracking-tight">Metatron Book</h2>
           <span className="text-[10px] font-mono px-2 py-0.5 bg-celestial-neon/10 text-celestial-neon rounded-full border border-celestial-neon/20">
             LIVE SYNC
           </span>
@@ -79,129 +89,86 @@ export function RegistryPanel() {
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {loading ? (
           Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="p-4 bg-card/40 rounded-xl border border-border/50 space-y-3">
-              <div className="flex items-center gap-3">
-                <Skeleton width={40} height={40} />
-                <div className="flex-1 space-y-2">
-                  <Skeleton width={120} height={14} />
-                  <Skeleton width={80} height={8} />
-                </div>
-              </div>
-              <Skeleton width={200} height={10} />
-            </div>
+            <div key={i} className="h-20 bg-muted/30 rounded-lg animate-pulse border border-border" />
           ))
         ) : nodes.length === 0 ? (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="h-full flex flex-col items-center justify-center p-6 text-center space-y-4"
-          >
-            <div className="w-16 h-16 rounded-full bg-celestial-neon/10 flex items-center justify-center border border-celestial-neon/20 glow-neon">
-              <BookOpen className="w-8 h-8 text-celestial-neon/40" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-sm font-semibold text-foreground/80">O Livro de Metatron</h3>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                As Linhas de Ley aguardam sua tecelagem. Comece a criar para registrar o conhecimento no Ledger.
-              </p>
-            </div>
-          </motion.div>
+          <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+            <Sparkles className="w-8 h-8 mb-2 text-celestial-neon opacity-50" />
+            <p className="text-xs font-mono">Nenhum nó registrado</p>
+            <p className="text-[10px] mt-1 opacity-60">Aguardando sincronia...</p>
+          </div>
         ) : (
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence>
             {nodes.map((node, index) => {
               const { icon: Icon, color, border, glow } = getNodeConfig(node.type)
 
               return (
                 <motion.div
                   key={node.id}
-                  layout
-                  initial={{ opacity: 0, x: 20, scale: 0.95 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ 
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                    delay: index * 0.05 
-                  }}
-                  className={`relative group cursor-pointer rounded-xl ${border} border bg-card/40 backdrop-blur-md hover:bg-card/60 transition-all overflow-hidden ${glow} shadow-lg hover:shadow-celestial-neon/10`}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={`relative group cursor-pointer rounded-xl ${border} border bg-card/80 backdrop-blur-sm hover:bg-card transition-all overflow-hidden ${glow} shadow-lg`}
                 >
                   {/* Card Body */}
                   <div className="relative p-3">
                     <div className="flex items-start gap-3">
                       {/* Icon */}
-                      <div className={`w-10 h-10 rounded-lg ${color} bg-current/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                      <div className={`w-10 h-10 rounded-lg ${color} bg-current/10 flex items-center justify-center flex-shrink-0`}>
                         <Icon className={`w-5 h-5 ${color}`} />
                       </div>
 
                       {/* Status Beacon */}
-                      <div className="absolute top-3 right-3 flex gap-1">
-                         <div className="w-1.5 h-1.5 rounded-full bg-celestial-neon animate-pulse" />
-                      </div>
+                      <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-celestial-neon animate-pulse" />
 
                       {/* Info Section */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono mb-0.5 opacity-60">
-                          #{String(node.id).slice(0, 8)}
+                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono mb-0.5">
+                          #{String(node.id).slice(0, 4)}
                         </div>
-                        <h3 className="text-sm font-bold text-foreground truncate group-hover:text-celestial-neon transition-colors">
-                          {node.name}
-                        </h3>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                           <span className={`text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-current/5 ${color}`}>
-                             {node.type}
-                           </span>
-                        </div>
+                        <h3 className="text-sm font-semibold text-foreground truncate">{node.name}</h3>
+                        <span className={`text-[10px] font-mono ${color}`}>{node.type}</span>
+                        
+                        {node.metadata?.description && (
+                          <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">
+                            {node.metadata.description}
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 text-[10px] text-muted-foreground font-mono opacity-60">
-                      <span>{node.created_at ? new Date(node.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'SINCERAMENTE'}</span>
+                    <div className="flex items-center justify-between mt-2 text-[10px] text-muted-foreground">
+                      <span>{new Date(node.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-celestial-neon">DETALHES</span>
-                        <ChevronRight className="w-3 h-3 text-celestial-neon" />
+                        <Info className="w-3 h-3" />
+                        <ChevronRight className="w-3 h-3" />
                       </div>
                     </div>
 
                     {/* Hover reveal - extra metadata */}
-                    <motion.div 
-                      initial={false}
-                      className="mt-3 overflow-hidden"
-                      animate={{ height: "auto" }}
-                    >
-                      <div className="hidden group-hover:block transition-all duration-300">
-                        <div className="flex flex-wrap gap-1 mb-2 pt-2 border-t border-border/30">
-                          {node.metadata?.horizons && Array.isArray(node.metadata.horizons) && node.metadata.horizons.map((h: number) => (
-                            <span key={h} className="text-[9px] px-1.5 py-0.5 rounded-full bg-celestial-neon/20 text-celestial-neon border border-celestial-neon/30 font-mono">
-                              H{h}
-                            </span>
-                          ))}
-                          {node.metadata?.tech && Array.isArray(node.metadata.tech) && node.metadata.tech.map((t: string) => (
-                            <span key={t} className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted border border-border text-muted-foreground font-mono">
-                              {t}
+                    <div className="mt-2 max-h-0 group-hover:max-h-24 overflow-hidden transition-all">
+                      {node.metadata?.skills && Array.isArray(node.metadata.skills) && (
+                        <div className="flex flex-wrap gap-1 mb-1">
+                          {node.metadata.skills.slice(0, 4).map((skill: string, i: number) => (
+                            <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full border ${border} ${color} font-mono`}>
+                              {skill}
                             </span>
                           ))}
                         </div>
-                        
-                        {node.metadata?.description && (
-                           <p className="text-[10px] text-muted-foreground font-mono leading-relaxed mb-2 line-clamp-3">
-                             {node.metadata.description}
-                           </p>
-                        )}
-
-                        {node.metadata?.goal && (
-                          <div className="p-2 rounded bg-celestial-gold/5 border border-celestial-gold/10">
-                            <p className="text-[9px] text-celestial-gold font-mono leading-tight flex items-center gap-2">
-                               <Sparkles className="w-3 h-3" />
-                               GOAL: {node.metadata.goal}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
+                      )}
+                      {node.metadata?.architecture && (
+                        <p className="text-[9px] text-muted-foreground font-mono">🏗️ {node.metadata.architecture}</p>
+                      )}
+                      {node.metadata?.domain && (
+                        <p className="text-[9px] text-muted-foreground font-mono">🌐 {node.metadata.domain}</p>
+                      )}
+                      {!node.metadata?.description && !node.metadata?.skills && !node.metadata?.architecture && !node.metadata?.domain && (
+                        <p className="text-[10px] text-celestial-neon font-mono">Sincronia: 100% (Metatron Ledger)</p>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               )
