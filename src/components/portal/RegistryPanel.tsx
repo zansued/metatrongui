@@ -31,6 +31,8 @@ const getNodeConfig = (type: string) => {
     case 'DOMAIN': return { icon: Globe, color: 'text-indigo-400', border: 'border-indigo-500/30', glow: 'shadow-indigo-500/20' }
     case 'FRAMEWORK': return { icon: Layers, color: 'text-red-400', border: 'border-red-500/30', glow: 'shadow-red-500/20' }
     case 'INTERFACE': return { icon: Monitor, color: 'text-cyan-400', border: 'border-cyan-500/30', glow: 'shadow-cyan-500/20' }
+    case 'SWARM': return { icon: Network, color: 'text-celestial-neon', border: 'border-celestial-neon/30', glow: 'shadow-[0_0_15px_rgba(34,211,238,0.4)]' }
+    case 'HUB': return { icon: Globe, color: 'text-celestial-gold', border: 'border-celestial-gold/30', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.4)]' }
     default: return { icon: Sparkles, color: 'text-celestial-gold', border: 'border-celestial-gold/30', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.2)]' }
   }
 }
@@ -135,23 +137,29 @@ export function RegistryPanel() {
                     </div>
 
                     {/* Hover reveal - extra metadata */}
-                    <div className="mt-2 max-h-0 group-hover:max-h-24 overflow-hidden transition-all">
-                      {node.metadata?.skills && Array.isArray(node.metadata.skills) && (
-                        <div className="flex flex-wrap gap-1 mb-1">
-                          {node.metadata.skills.slice(0, 4).map((skill: string, i: number) => (
-                            <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full border ${border} ${color} font-mono`}>
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
+                    <div className="mt-2 max-h-0 group-hover:max-h-32 overflow-hidden transition-all">
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {node.metadata?.horizons && Array.isArray(node.metadata.horizons) && node.metadata.horizons.map((h: number) => (
+                          <span key={h} className="text-[9px] px-1.5 py-0.5 rounded-full bg-celestial-neon/20 text-celestial-neon border border-celestial-neon/30 font-mono">
+                            HORIZON {h}
+                          </span>
+                        ))}
+                        {node.metadata?.tech && Array.isArray(node.metadata.tech) && node.metadata.tech.map((t: string) => (
+                          <span key={t} className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted border border-border text-muted-foreground font-mono">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      {node.metadata?.description && (
+                         <p className="text-[9px] text-muted-foreground font-mono leading-tight mb-1">{node.metadata.description}</p>
                       )}
-                      {node.metadata?.architecture && (
-                        <p className="text-[9px] text-muted-foreground font-mono">🏗️ {node.metadata.architecture}</p>
+
+                      {node.metadata?.goal && (
+                        <p className="text-[9px] text-celestial-gold font-mono leading-tight">🎯 Meta: {node.metadata.goal}</p>
                       )}
-                      {node.metadata?.domain && (
-                        <p className="text-[9px] text-muted-foreground font-mono">🌐 {node.metadata.domain}</p>
-                      )}
-                      {!node.metadata?.description && !node.metadata?.skills && !node.metadata?.architecture && !node.metadata?.domain && (
+
+                      {!node.metadata?.description && !node.metadata?.horizons && !node.metadata?.tech && (
                         <p className="text-[10px] text-celestial-neon font-mono">Sincronia: 100% (Metatron Ledger)</p>
                       )}
                     </div>
