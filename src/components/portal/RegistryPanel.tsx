@@ -158,6 +158,7 @@ export function RegistryPanel() {
                             </span>
                           ))}
                         </div>
+<<<<<<< Updated upstream
                       )}
                       {node.metadata?.architecture && (
                         <p className="text-[9px] text-muted-foreground font-mono">🏗️ {node.metadata.architecture}</p>
@@ -169,6 +170,25 @@ export function RegistryPanel() {
                         <p className="text-[10px] text-celestial-neon font-mono">Sincronia: 100% (Metatron Ledger)</p>
                       )}
                     </div>
+=======
+                        
+                        {node.metadata?.description && (
+                           <p className="text-[10px] text-muted-foreground font-mono leading-relaxed mb-2 max-h-32 overflow-y-auto custom-scrollbar italic whitespace-pre-wrap">
+                             {node.metadata.description}
+                           </p>
+                        )}
+
+                        {node.metadata?.goal && (
+                          <div className="p-2 rounded bg-celestial-gold/5 border border-celestial-gold/10">
+                            <p className="text-[9px] text-celestial-gold font-mono leading-tight flex items-center gap-2">
+                               <Sparkles className="w-3 h-3" />
+                               GOAL: {node.metadata.goal}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+>>>>>>> Stashed changes
                   </div>
                 </motion.div>
               )

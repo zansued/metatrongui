@@ -1,3 +1,5 @@
+@import "@vibe/core/tokens";
+
 #lovable-badge {
   display: none !important;
 }
@@ -6,6 +8,11 @@
 @tailwind components;
 @tailwind utilities;
 
+<<<<<<< Updated upstream
+=======
+/* Monday Vibe Design System Tokens */
+
+>>>>>>> Stashed changes
 :root {
   color-scheme: dark;
   --celestial-neon: 187 94% 51%;

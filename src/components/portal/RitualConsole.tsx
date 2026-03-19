@@ -24,14 +24,6 @@ interface Message {
   logs?: RealtimeLog[]
 }
 
-interface SupabaseNode {
-  id: string;
-  name: string;
-  type: string;
-  metadata?: any;
-  created_at: string;
-}
-
 export function RitualConsole() {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([
@@ -39,7 +31,7 @@ export function RitualConsole() {
   ])
   const [isProcessing, setIsProcessing] = useState(false)
   const [loadingText, setLoadingText] = useState("MEDITANDO")
-  const [nodes, setNodes] = useState<SupabaseNode[]>([])
+  const [nodes, setNodes] = useState<KnowledgeNode[]>([])
   const [currentLogs, setCurrentLogs] = useState<RealtimeLog[]>([])
   const [isVoiceOpen, setIsVoiceOpen] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -117,14 +109,42 @@ export function RitualConsole() {
 
       if (artifacts.length > 0) {
         await executeArtifacts(artifacts);
+<<<<<<< Updated upstream
         setMessages(prev => [...prev, {
           role: 'metatron',
           content: 'As Runas foram tecidas com sucesso. O fluxo de dados está em tempo real.',
+=======
+        
+        // Auto-persist knowledge nodes for each artifact
+        let savedCount = 0;
+        for (const artifact of artifacts) {
+          const newNode: KnowledgeNode = {
+            name: artifact.title,
+            type: artifact.title.toLowerCase().includes('serv') ? 'SERVER' : 
+                  artifact.title.toLowerCase().includes('db') || artifact.title.toLowerCase().includes('banco') ? 'DATABASE' :
+                  artifact.title.toLowerCase().includes('ui') || artifact.title.toLowerCase().includes('interface') ? 'INTERFACE' : 'ORCHESTRATOR',
+            metadata: {
+              description: `Artefato tecido em: ${new Date().toLocaleString('pt-BR')}`,
+              goal: value.slice(0, 100)
+            }
+          }
+          const saved = await KnowledgeService.saveNode(newNode)
+          if (saved) savedCount++;
+        }
+
+        const successContent = savedCount > 0 
+          ? `As Runas foram tecidas com sucesso. ${savedCount} nodo(s) registrado(s) no Ledger.`
+          : 'As Runas foram tecidas, mas houve uma falha na sincronia com o Ledger (Verifique a conexão).';
+
+        setMessages(prev => [...prev, {
+          role: 'metatron',
+          content: successContent,
+>>>>>>> Stashed changes
           timestamp: new Date(),
           artifacts,
           logs: currentLogs
         }]);
-        neuralVoice.speak('As Runas foram tecidas com sucesso.');
+        neuralVoice.speak(successContent);
       } else {
         setMessages(prev => [...prev, { role: 'metatron', content: response, timestamp: new Date() }])
         neuralVoice.speak(response);
