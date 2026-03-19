@@ -18,6 +18,8 @@ import {
   Info,
   BookOpen
 } from 'lucide-react'
+import { Skeleton } from '@vibe/core'
+import MetatronTipseen from './MetatronTipseen'
 
 const getNodeConfig = (type: string) => {
   const normalizedType = (type || '').toUpperCase()
@@ -63,7 +65,12 @@ export function RegistryPanel() {
       {/* Header Section */}
       <div className="relative p-4 border-b border-border">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-foreground tracking-tight">Metatron Book</h2>
+          <MetatronTipseen 
+            title="O Códice de Metatron" 
+            content="Este Ledger sincroniza em tempo real com as Linhas de Ley. Cada card representa um nodo de conhecimento tecido pela inteligência coletiva."
+          >
+            <h2 className="text-lg font-bold text-foreground tracking-tight cursor-help">Metatron Book</h2>
+          </MetatronTipseen>
           <span className="text-[10px] font-mono px-2 py-0.5 bg-celestial-neon/10 text-celestial-neon rounded-full border border-celestial-neon/20">
             LIVE SYNC
           </span>
@@ -75,7 +82,16 @@ export function RegistryPanel() {
       <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
         {loading ? (
           Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-24 bg-card/40 rounded-xl animate-pulse border border-border/50" />
+            <div key={i} className="p-4 bg-card/40 rounded-xl border border-border/50 space-y-3">
+              <div className="flex items-center gap-3">
+                <Skeleton width={40} height={40} />
+                <div className="flex-1 space-y-2">
+                  <Skeleton width={120} height={14} />
+                  <Skeleton width={80} height={8} />
+                </div>
+              </div>
+              <Skeleton width={200} height={10} />
+            </div>
           ))
         ) : nodes.length === 0 ? (
           <motion.div 

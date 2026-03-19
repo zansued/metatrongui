@@ -6,6 +6,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Monday Vibe Design System Tokens */
+@import "@vibe/core/dist/tokens/tokens.css";
+
 :root {
   color-scheme: dark;
   --celestial-neon: 187 94% 51%;
@@ -43,6 +46,20 @@
   --sidebar-accent-foreground: 210 40% 98%;
   --sidebar-border: 217 33% 17%;
   --sidebar-ring: 187 94% 51%;
+}
+
+/* Metatron Custom Vibe Theme Overrides */
+.black-app-theme {
+  --primary-color: #22d3ee; /* Celestial Neon */
+  --primary-hover-color: #0891b2;
+  --brand-color: #22d3ee;
+  --primary-background-color: #020617; /* Celestial Void */
+  --secondary-background-color: #0f172a;
+  --ui-border-color: rgba(34, 211, 238, 0.2);
+  --layout-border-color: rgba(34, 211, 238, 0.1);
+  --placeholder-color: #94a3b8;
+  --icon-color: #22d3ee;
+  --text-color-on-primary: #020617;
 }
 
 @layer base {
