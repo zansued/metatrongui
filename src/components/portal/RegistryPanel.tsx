@@ -94,6 +94,12 @@ export function RegistryPanel() {
           Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-20 bg-muted/30 rounded-lg animate-pulse border border-border" />
           ))
+        ) : nodes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+            <Sparkles className="w-8 h-8 mb-2 text-celestial-neon opacity-50" />
+            <p className="text-xs font-mono">Nenhum nó registrado</p>
+            <p className="text-[10px] mt-1 opacity-60">Aguardando sincronia...</p>
+          </div>
         ) : (
           <AnimatePresence>
             {nodes.map((node, index) => {
