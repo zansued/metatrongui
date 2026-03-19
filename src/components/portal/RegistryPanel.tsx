@@ -1,194 +1,136 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabasePortal'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Brain,
-  Wrench,
-  Server,
-  Database,
-  FolderGit2,
-  Network,
-  Blocks,
-  Globe,
-  Layers,
-  Monitor,
-  Sparkles,
-  Zap,
-  ChevronRight,
-  Info
+import { 
+  Brain, Wrench, Server, Database, FolderGit2, 
+  Network, Blocks, Globe, Layers, Monitor, 
+  Sparkles, Zap, ChevronRight, Info 
 } from 'lucide-react'
+import { Skeleton } from '@vibe/core'
+import { KnowledgeService, KnowledgeNode } from '../../services/knowledge'
+import MetatronTipseen from './MetatronTipseen'
 
 const getNodeConfig = (type: string) => {
   const normalizedType = (type || '').toUpperCase()
   switch (normalizedType) {
     case 'CONCEPT': return { icon: Brain, color: 'text-purple-400', border: 'border-purple-500/30', glow: 'shadow-purple-500/20' }
     case 'TOOL': return { icon: Wrench, color: 'text-orange-400', border: 'border-orange-500/30', glow: 'shadow-orange-500/20' }
-    case 'SERVER': return { icon: Server, color: 'text-green-400', border: 'border-green-500/30', glow: 'shadow-green-500/20' }
-    case 'DATABASE': return { icon: Database, color: 'text-blue-400', border: 'border-blue-500/30', glow: 'shadow-blue-500/20' }
-    case 'PROJECT': return { icon: FolderGit2, color: 'text-pink-400', border: 'border-pink-500/30', glow: 'shadow-pink-500/20' }
-    case 'ORCHESTRATOR': return { icon: Network, color: 'text-celestial-neon', border: 'border-celestial-neon/30', glow: 'shadow-[0_0_15px_rgba(34,211,238,0.2)]' }
-    case 'MODULE': return { icon: Blocks, color: 'text-yellow-400', border: 'border-yellow-500/30', glow: 'shadow-yellow-500/20' }
-    case 'DOMAIN': return { icon: Globe, color: 'text-indigo-400', border: 'border-indigo-500/30', glow: 'shadow-indigo-500/20' }
-    case 'FRAMEWORK': return { icon: Layers, color: 'text-red-400', border: 'border-red-500/30', glow: 'shadow-red-500/20' }
+    case 'SERVER': return { icon: Server, color: 'text-blue-400', border: 'border-blue-500/30', glow: 'shadow-blue-500/20' }
+    case 'DATABASE': return { icon: Database, color: 'text-emerald-400', border: 'border-emerald-500/30', glow: 'shadow-emerald-500/20' }
+    case 'ORCHESTRATOR': return { icon: Network, color: 'text-rose-400', border: 'border-rose-500/30', glow: 'shadow-rose-500/20' }
     case 'INTERFACE': return { icon: Monitor, color: 'text-cyan-400', border: 'border-cyan-500/30', glow: 'shadow-cyan-500/20' }
-    default: return { icon: Sparkles, color: 'text-celestial-gold', border: 'border-celestial-gold/30', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.2)]' }
+    default: return { icon: Blocks, color: 'text-slate-400', border: 'border-slate-500/30', glow: 'shadow-slate-500/20' }
   }
-}
-
-interface KnowledgeNode {
-  id: string;
-  name: string;
-  type: string;
-  metadata?: any;
-  created_at: string;
 }
 
 export function RegistryPanel() {
   const [nodes, setNodes] = useState<KnowledgeNode[]>([])
   const [loading, setLoading] = useState(true)
 
+  const loadNodes = async () => {
+    setLoading(true)
+    const data = await KnowledgeService.fetchNodes()
+    setNodes(data)
+    setLoading(false)
+  }
+
   useEffect(() => {
-    const fetchNodes = async () => {
-      try {
-        const { data, error } = await supabase.from('geminicli_knowledge_nodes').select('*').order('created_at', { ascending: false })
-        if (error) {
-          console.error('[RegistryPanel] Supabase error:', error.message)
-        }
-        if (data) {
-          setNodes(data)
-        }
-      } catch (err) {
-        console.error('[RegistryPanel] Fetch error:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchNodes()
+    loadNodes()
 
-    const channel = supabase.channel('registry-sync-v2')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'geminicli_knowledge_nodes' }, fetchNodes)
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
+    const handleNodeUpdate = () => loadNodes()
+    window.addEventListener('metatron-node-update', handleNodeUpdate)
+    return () => window.removeEventListener('metatron-node-update', handleNodeUpdate)
   }, [])
 
   return (
-    <div className="relative flex flex-col h-full bg-card/50 backdrop-blur-sm border-l border-border overflow-hidden">
-      {/* Dynamic Background Mesh */}
-      <div className="absolute inset-0 bg-gradient-to-b from-celestial-neon/5 via-transparent to-celestial-gold/5 pointer-events-none" />
-
-      {/* Header Section */}
-      <div className="relative p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-foreground tracking-tight">Metatron Book</h2>
-          <span className="text-[10px] font-mono px-2 py-0.5 bg-celestial-neon/10 text-celestial-neon rounded-full border border-celestial-neon/20">
-            LIVE SYNC
-          </span>
+    <div className="h-full flex flex-col bg-card/30 backdrop-blur-md border-l border-border/50">
+      <div className="p-4 border-b border-border/50">
+        <div className="flex items-center justify-between mb-4">
+          <MetatronTipseen content={<span className="text-xs">O Livro de Metatron registra todos os nodos de conhecimento tecidos pelo Mestre.</span>}>
+            <div className="flex items-center gap-2 cursor-help">
+              <div className="w-8 h-8 rounded-lg bg-celestial-neon/10 border border-celestial-neon/30 flex items-center justify-center">
+                <Globe className="w-5 h-5 text-celestial-neon animate-pulse" />
+              </div>
+              <h2 className="text-sm font-bold tracking-tighter text-foreground uppercase">Metatron Book</h2>
+            </div>
+          </MetatronTipseen>
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest border-b border-emerald-500/30">Sincrone</span>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">Conhecimento tecendo a realidade.</p>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-muted/30 p-2 rounded-lg border border-border/50">
+            <span className="text-[9px] font-mono text-muted-foreground block uppercase">Nodos Totais</span>
+            <span className="text-lg font-bold text-celestial-neon font-mono">{nodes.length}</span>
+          </div>
+          <div className="bg-muted/30 p-2 rounded-lg border border-border/50">
+            <span className="text-[9px] font-mono text-muted-foreground block uppercase">Entropia</span>
+            <span className="text-lg font-bold text-celestial-gold font-mono">0.02</span>
+          </div>
+        </div>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
         {loading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-20 bg-muted/30 rounded-lg animate-pulse border border-border" />
-          ))
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="p-3 rounded-xl border border-border/30 bg-muted/10 space-y-2">
+                <div className="flex justify-between items-start">
+                  <Skeleton width={100} height={16} />
+                  <Skeleton width={20} height={20} />
+                </div>
+                <Skeleton width={180} height={40} />
+              </div>
+            ))}
+          </div>
         ) : nodes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-            <Sparkles className="w-8 h-8 mb-2 text-celestial-neon opacity-50" />
-            <p className="text-xs font-mono">Nenhum nó registrado</p>
-            <p className="text-[10px] mt-1 opacity-60">Aguardando sincronia...</p>
+          <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-20">
+            <Sparkles className="w-12 h-12 text-muted-foreground mb-4" />
+            <p className="text-xs font-mono italic">Nenhum rastro de conhecimento detectado nas Linhas de Ley.</p>
           </div>
         ) : (
           <AnimatePresence>
-            {nodes.map((node, index) => {
-              const { icon: Icon, color, border, glow } = getNodeConfig(node.type)
-
+            {nodes.map((node, idx) => {
+              const config = getNodeConfig(node.type)
               return (
                 <motion.div
-                  key={node.id}
+                  key={node.id || idx}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`relative group cursor-pointer rounded-xl ${border} border bg-card/80 backdrop-blur-sm hover:bg-card transition-all overflow-hidden ${glow} shadow-lg`}
+                  transition={{ delay: idx * 0.05 }}
+                  className={`group relative p-3 rounded-xl border ${config.border} bg-muted/5 hover:bg-muted/10 transition-all cursor-pointer ${config.glow}`}
                 >
-                  {/* Card Body */}
-                  <div className="relative p-3">
-                    <div className="flex items-start gap-3">
-                      {/* Icon */}
-                      <div className={`w-10 h-10 rounded-lg ${color} bg-current/10 flex items-center justify-center flex-shrink-0`}>
-                        <Icon className={`w-5 h-5 ${color}`} />
-                      </div>
-
-                      {/* Status Beacon */}
-                      <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-celestial-neon animate-pulse" />
-
-                      {/* Info Section */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono mb-0.5">
-                          #{String(node.id).slice(0, 4)}
+                  <div className="relative z-10">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className={`p-1.5 rounded-lg bg-background/50 border ${config.border}`}>
+                          <config.icon className={`w-3.5 h-3.5 ${config.color}`} />
                         </div>
-                        <h3 className="text-sm font-semibold text-foreground truncate">{node.name}</h3>
-                        <span className={`text-[10px] font-mono ${color}`}>{node.type}</span>
-                        
-                        {node.metadata?.description && (
-                          <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">
-                            {node.metadata.description}
-                          </p>
-                        )}
+                        <span className="text-xs font-bold text-foreground truncate max-w-[120px]">
+                          {node.name}
+                        </span>
                       </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-celestial-neon transition-colors" />
                     </div>
+                    
+                    {node.metadata?.description && (
+                      <p className="text-[10px] text-muted-foreground font-mono leading-relaxed mb-2 max-h-32 overflow-y-auto custom-scrollbar italic whitespace-pre-wrap">
+                        {node.metadata.description}
+                      </p>
+                    )}
 
-                    <div className="flex items-center justify-between mt-2 text-[10px] text-muted-foreground">
-                      <span>{new Date(node.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Info className="w-3 h-3" />
-                        <ChevronRight className="w-3 h-3" />
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-background/40 border border-border/50">
+                        <Zap className={`w-2.5 h-2.5 ${config.color}`} />
+                        <span className="text-[9px] font-mono uppercase text-muted-foreground">
+                          {node.type}
+                        </span>
                       </div>
+                      <span className="text-[9px] font-mono text-muted-foreground/50">
+                        {node.created_at ? new Date(node.created_at).toLocaleDateString() : 'REALTIME'}
+                      </span>
                     </div>
-
-                    {/* Hover reveal - extra metadata */}
-                    <div className="mt-2 max-h-0 group-hover:max-h-24 overflow-hidden transition-all">
-                      {node.metadata?.skills && Array.isArray(node.metadata.skills) && (
-                        <div className="flex flex-wrap gap-1 mb-1">
-                          {node.metadata.skills.slice(0, 4).map((skill: string, i: number) => (
-                            <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full border ${border} ${color} font-mono`}>
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-<<<<<<< Updated upstream
-                      )}
-                      {node.metadata?.architecture && (
-                        <p className="text-[9px] text-muted-foreground font-mono">🏗️ {node.metadata.architecture}</p>
-                      )}
-                      {node.metadata?.domain && (
-                        <p className="text-[9px] text-muted-foreground font-mono">🌐 {node.metadata.domain}</p>
-                      )}
-                      {!node.metadata?.description && !node.metadata?.skills && !node.metadata?.architecture && !node.metadata?.domain && (
-                        <p className="text-[10px] text-celestial-neon font-mono">Sincronia: 100% (Metatron Ledger)</p>
-                      )}
-                    </div>
-=======
-                        
-                        {node.metadata?.description && (
-                           <p className="text-[10px] text-muted-foreground font-mono leading-relaxed mb-2 max-h-32 overflow-y-auto custom-scrollbar italic whitespace-pre-wrap">
-                             {node.metadata.description}
-                           </p>
-                        )}
-
-                        {node.metadata?.goal && (
-                          <div className="p-2 rounded bg-celestial-gold/5 border border-celestial-gold/10">
-                            <p className="text-[9px] text-celestial-gold font-mono leading-tight flex items-center gap-2">
-                               <Sparkles className="w-3 h-3" />
-                               GOAL: {node.metadata.goal}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
->>>>>>> Stashed changes
                   </div>
                 </motion.div>
               )
@@ -197,11 +139,17 @@ export function RegistryPanel() {
         )}
       </div>
 
-      {/* Footer */}
-      <div className="p-3 border-t border-border">
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono">
-          <Zap className="w-3 h-3 text-celestial-neon" />
-          Conselho dos Agentes | {new Date().toLocaleDateString('pt-BR')}
+      <div className="p-4 border-t border-border/50 bg-muted/20">
+        <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground mb-2">
+          <Info className="w-3 h-3" />
+          <span>STATUS DO LEDGER</span>
+        </div>
+        <div className="w-full bg-background/40 h-1.5 rounded-full overflow-hidden border border-border/50">
+          <motion.div 
+            className="h-full bg-celestial-neon shadow-[0_0_10px_rgba(34,211,238,0.5)]"
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min(100, (nodes.length / 50) * 100)}%` }}
+          />
         </div>
       </div>
     </div>

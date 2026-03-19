@@ -10,6 +10,7 @@ import { useVoiceCommands } from '../../hooks/useVoiceCommands'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { neuralVoice } from '../../services/voice/NeuralVoice'
+import { KnowledgeService, KnowledgeNode } from '../../services/knowledge'
 
 interface RealtimeLog {
   type: 'info' | 'success' | 'stdout' | 'stderr'
@@ -109,11 +110,6 @@ export function RitualConsole() {
 
       if (artifacts.length > 0) {
         await executeArtifacts(artifacts);
-<<<<<<< Updated upstream
-        setMessages(prev => [...prev, {
-          role: 'metatron',
-          content: 'As Runas foram tecidas com sucesso. O fluxo de dados está em tempo real.',
-=======
         
         // Auto-persist knowledge nodes for each artifact
         let savedCount = 0;
@@ -139,7 +135,6 @@ export function RitualConsole() {
         setMessages(prev => [...prev, {
           role: 'metatron',
           content: successContent,
->>>>>>> Stashed changes
           timestamp: new Date(),
           artifacts,
           logs: currentLogs
