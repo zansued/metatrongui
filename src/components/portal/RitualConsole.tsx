@@ -11,6 +11,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { neuralVoice } from '../../services/voice/NeuralVoice'
 import { KnowledgeService, KnowledgeNode } from '../../services/knowledge'
+import { METATRON_LAWS, NUCLEUS_CONFIG } from '../../core/Nucleus'
 
 interface RealtimeLog {
   type: 'info' | 'success' | 'stdout' | 'stderr'
@@ -35,6 +36,7 @@ export function RitualConsole() {
   const [nodes, setNodes] = useState<KnowledgeNode[]>([])
   const [currentLogs, setCurrentLogs] = useState<RealtimeLog[]>([])
   const [isVoiceOpen, setIsVoiceOpen] = useState(true)
+  const [isAgentConnected, setIsAgentConnected] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -164,12 +166,24 @@ export function RitualConsole() {
             <Terminal className="w-5 h-5 text-celestial-neon" />
             <h1 className="text-lg font-bold text-foreground tracking-tight">Console de Ritual</h1>
           </div>
-          <button
-            onClick={resetConversation}
-            className="text-xs font-mono px-3 py-1.5 rounded-lg bg-muted border border-border text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all"
-          >
-            Nova Conversa
-          </button>
+          <div className="flex items-center gap-3">
+            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${isAgentConnected ? 'bg-celestial-neon/10 border-celestial-neon/30 text-celestial-neon' : 'bg-muted border-border text-muted-foreground'} text-[10px] font-mono animate-pulse`}>
+              <Activity className="w-3 h-3" />
+              {isAgentConnected ? 'ANTIGRAVITY SYNCED' : 'OFFLINE'}
+            </div>
+            
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-celestial-gold/30 bg-celestial-gold/10 text-celestial-gold text-[10px] font-mono">
+              <Bot className="w-3 h-3" />
+              NÚCLEO: {NUCLEUS_CONFIG.status} v{NUCLEUS_CONFIG.version}
+            </div>
+
+            <button
+              onClick={resetConversation}
+              className="text-xs font-mono px-3 py-1.5 rounded-lg bg-muted border border-border text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all"
+            >
+              Nova Conversa
+            </button>
+          </div>
         </div>
       </div>
 

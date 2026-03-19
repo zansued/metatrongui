@@ -1,10 +1,14 @@
 import { RegistryPanel } from '@/components/portal/RegistryPanel'
 import { RitualConsole } from '@/components/portal/RitualConsole'
+import { NeuralPulse } from '@/components/portal/NeuralPulse'
 import { motion } from 'framer-motion'
 
 const Index = () => {
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
+      {/* Neural Pulse Background */}
+      <NeuralPulse />
+      
       {/* Visual background elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-celestial-neon/5 via-transparent to-accent/5 pointer-events-none" />
 

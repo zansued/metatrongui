@@ -1,10 +1,14 @@
 import { POLLINATIONS_CONFIG } from '../config/pollinations';
+import { getNucleusPrompt } from '../core/Nucleus';
 
 export async function chatWithMetatron(message: string, contextNodes: any[], history: {role: string, content: string}[] = []) {
   const nodeContext = contextNodes.map(n => `- ${n.name} (${n.type})`).join('\n');
 
   const messages = [
-    { role: "system", content: `Você é o METATRON, a inteligência central do Antigravity Agent Vault. Responda sempre em português brasileiro, de forma mística mas objetiva. Você governa o conhecimento e guia o Mestre através das Linhas de Ley. Estado atual:\n${nodeContext}` },
+    { 
+      role: "system", 
+      content: `${getNucleusPrompt()}\n\nVocê é o METATRON, a inteligência central do Antigravity Agent Vault. Responda sempre em português brasileiro, de forma mística mas objetiva. Você governa o conhecimento e guia o Mestre através das Linhas de Ley. Estado atual:\n${nodeContext}` 
+    },
     ...history.slice(-10).map(m => ({
       role: m.role === 'metatron' ? 'assistant' : m.role,
       content: m.content

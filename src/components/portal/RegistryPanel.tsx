@@ -8,6 +8,7 @@ import {
 import { Skeleton } from '@vibe/core'
 import { KnowledgeService, KnowledgeNode } from '../../services/knowledge'
 import MetatronTipseen from './MetatronTipseen'
+import { METATRON_LAWS } from '../../core/Nucleus'
 
 const getNodeConfig = (type: string) => {
   const normalizedType = (type || '').toUpperCase()
@@ -144,12 +145,25 @@ export function RegistryPanel() {
           <Info className="w-3 h-3" />
           <span>STATUS DO LEDGER</span>
         </div>
-        <div className="w-full bg-background/40 h-1.5 rounded-full overflow-hidden border border-border/50">
+        <div className="w-full bg-background/40 h-1.5 rounded-full overflow-hidden border border-border/50 mb-4">
           <motion.div 
             className="h-full bg-celestial-neon shadow-[0_0_10px_rgba(34,211,238,0.5)]"
             initial={{ width: 0 }}
             animate={{ width: `${Math.min(100, (nodes.length / 50) * 100)}%` }}
           />
+        </div>
+
+        {/* Metatron Laws Section */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-[9px] font-mono text-celestial-gold">
+            <Sparkles className="w-3 h-3" />
+            <span>LEIS DE METATRON</span>
+          </div>
+          {METATRON_LAWS.map(law => (
+            <div key={law.id} className="text-[8px] font-mono text-muted-foreground/80 leading-tight">
+              <span className="text-celestial-gold opacity-60">RULE_{law.id}:</span> {law.description}
+            </div>
+          ))}
         </div>
       </div>
     </div>
