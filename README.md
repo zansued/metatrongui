@@ -27,11 +27,15 @@ graph TD
     Gateway <--> Horizon7
     Horizon7 <--> ExternalGit
 
-    %% Styling
-    style User fill:#eee,stroke:#00f,stroke-width:2px,color:#fff
-    style Ledger fill:#1a1a1a,stroke:#4a90e2,stroke-width:2px
-    style Vault fill:#1a1a1a,stroke:#7b61ff,stroke-width:2px
-    style Horizon7 fill:#eee,stroke:#00f3ff,stroke-width:2px
+    %% Styling (Dark Cyber-Arcane Theme)
+    %% Fundo escuro uniforme com bordas coloridas para categorização
+    style User fill:#1E1E2E,stroke:#F9E2AF,stroke-width:2px,color:#F9E2AF
+    style Console fill:#1E1E2E,stroke:#89B4FA,stroke-width:2px,color:#D9E0EE
+    style Gateway fill:#1E1E2E,stroke:#CBA6F7,stroke-width:2px,color:#D9E0EE
+    style Ledger fill:#1E1E2E,stroke:#A6E3A1,stroke-width:2px,color:#D9E0EE
+    style Vault fill:#1E1E2E,stroke:#F38BA8,stroke-width:2px,color:#D9E0EE
+    style Horizon7 fill:#1E1E2E,stroke:#94E2D5,stroke-width:2px,color:#D9E0EE
+    style ExternalGit fill:#2A2A37,stroke:#BAC2DE,stroke-width:2px,color:#BAC2DE
 ```
 
 ---
