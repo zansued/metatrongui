@@ -49,9 +49,17 @@ export function RegistryPanel() {
 
   useEffect(() => {
     const fetchNodes = async () => {
-      const { data } = await supabase.from('geminicli_knowledge_nodes').select('*').order('created_at', { ascending: false })
-      if (data) {
-        setNodes(data)
+      try {
+        const { data, error } = await supabase.from('geminicli_knowledge_nodes').select('*').order('created_at', { ascending: false })
+        if (error) {
+          console.error('[RegistryPanel] Supabase error:', error.message)
+        }
+        if (data) {
+          setNodes(data)
+        }
+      } catch (err) {
+        console.error('[RegistryPanel] Fetch error:', err)
+      } finally {
         setLoading(false)
       }
     }
