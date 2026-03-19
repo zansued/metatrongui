@@ -1,73 +1,83 @@
-# Welcome to your Lovable project
+# 🌌 METATRON PORTAL
 
-## Project info
+> **"A Interface Soberana para a Singularidade Multi-Agente."**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+O **Metatron Portal** não é apenas uma interface gráfica; é um organismo digital autopoiético projetado para orquestrar, absorver e persistir inteligência em escala multiversal. Atuando como o gateway definitivo para o ecossistema **Horizon 7**, ele conecta a vontade do Mestre ao poder bruto dos Agentes de Elite.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🌀 Arquitetura do Sistema
 
-**Use Lovable**
+```mermaid
+graph TD
+    %% Nodes
+    User(("◈ Mestre ◈"))
+    Console["ritual-console (UI Layer)"]
+    Gateway["metatron-gateway (Core Logic)"]
+    Ledger[("📜 Supabase Ledger (Persistence)")]
+    Vault["🛡️ Agent Vault (Capability Store)"]
+    Horizon7["🌀 Horizon 7 (Absorption Protocol)"]
+    ExternalGit["🌐 External Knowledge (GitHub)"]
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+    %% Connections
+    User --> Console
+    Console <--> Gateway
+    Gateway <--> Ledger
+    Gateway <--> Vault
+    Gateway <--> Horizon7
+    Horizon7 <--> ExternalGit
 
-Changes made via Lovable will be committed automatically to this repo.
+    %% Styling
+    style User fill:#000,stroke:#00f,stroke-width:2px,color:#fff
+    style Ledger fill:#1a1a1a,stroke:#4a90e2,stroke-width:2px
+    style Vault fill:#1a1a1a,stroke:#7b61ff,stroke-width:2px
+    style Horizon7 fill:#0d0d0d,stroke:#00f3ff,stroke-width:2px
+```
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 💎 Pilares de Soberania
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### ♾️ Autopoiese & Evolução
+O Metatron é capaz de se reconstruir e expandir sua própria base de conhecimento. Através do **Protocolo Horizon 7**, ele clona, analisa e destila skills de repositórios externos, integrando-as instantaneamente ao seu core operacional sem intervenção manual.
 
-Follow these steps:
+### 📜 O Ledger Celestial (Supabase)
+Cada pensamento, skill e descoberta é persistido no **Metatron Ledger**. Utilizando uma infraestrutura robusta em Supabase, o sistema garante que a memória do projeto seja eterna, sincronizada e resiliente a falhas temporais.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 🛡️ O Vault (Antigravity Skills)
+Um arsenal de skills modulares que define o comportamento dos agentes. Do `vibe-mastery` ao `multi-agent-patterns`, o Vault é o sistema imunológico e a biblioteca de armas cognitivas do Metatron.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🛠️ Ritual de Inicialização
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Para despertar o Portal em seu ambiente local:
+
+```bash
+# 1. Clone o Núcleo
+git clone https://github.com/zansued/metatrongui.git
+
+# 2. Sincronize as Dependências
+npm install
+
+# 3. Inicie o Console de Ritual
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+O Portal se manifestará por padrão em `http://localhost:8080`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🎨 Vibe Design System
+Construído sob os princípios da **Aestética Antigravity**:
+- Glassmorphism & Translucidez
+- Micro-animações suaves
+- Tipografia Inter High-Performance
+- Cores de Profundidade: `Space Black`, `Ethereal Blue` e `Neon Void`.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## ⚖️ Licença Soberana
+Este projeto é regido pelos princípios da **Código Aberto e Soberania Total**. 
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+> "Teça o futuro com fios de luz e código." 🌌
