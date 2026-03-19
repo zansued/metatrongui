@@ -82,34 +82,52 @@ class NeuralVoiceService {
     const cleaned = stripMarkdown(text);
     if (!cleaned) return;
 
-    this.stop(); // Stop any playing audio
+    this.stop();
     this.isStopped = false;
 
-    // Small delay to avoid hitting rate limits right after chat API call
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r => setTimeout(r, 1000));
 
     const chunks = splitIntoChunks(cleaned, CHUNK_SIZE);
     console.log(`[NeuralVoice] Split into ${chunks.length} chunks`);
 
-    for (let i = 0; i < chunks.length; i++) {
-      if (this.isStopped) {
-        console.log('[NeuralVoice] Chain stopped by user');
-        break;
+    // Prefetch first two chunks in parallel
+    const prefetchQueue = new Map<number, Promise<Blob | null>>();
+    const prefetch = (idx: number) => {
+      if (idx < chunks.length && !prefetchQueue.has(idx)) {
+        prefetchQueue.set(idx, this.fetchChunkAudio(chunks[idx], options).catch(err => {
+          console.warn(`[NeuralVoice] Prefetch ${idx} failed:`, err);
+          return null;
+        }));
       }
+    };
+
+    // Start prefetching chunk 0 and 1 immediately
+    prefetch(0);
+    prefetch(1);
+
+    for (let i = 0; i < chunks.length; i++) {
+      if (this.isStopped) break;
 
       console.log(`[NeuralVoice] Playing chunk ${i + 1}/${chunks.length} (${chunks[i].length} chars)`);
 
+      // Prefetch next chunk while current plays
+      prefetch(i + 1);
+      prefetch(i + 2);
+
       try {
-        await this.playChunk(chunks[i], options);
+        const blob = await prefetchQueue.get(i);
+        if (!blob) {
+          throw new Error('Prefetch returned null');
+        }
+        await this.playBlob(blob);
       } catch (error) {
         console.warn(`[NeuralVoice] Chunk ${i + 1} failed, using fallback:`, error);
         this.fallbackSpeak(chunks.slice(i).join(' '), options);
         break;
       }
 
-      // Small gap between chunks for natural pacing
       if (i < chunks.length - 1 && !this.isStopped) {
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 200));
       }
     }
   }
@@ -123,64 +141,49 @@ class NeuralVoiceService {
     window.speechSynthesis.cancel();
   }
 
-  private async playChunk(text: string, options: TTSOptions): Promise<void> {
+  private async fetchChunkAudio(text: string, options: TTSOptions): Promise<Blob> {
     const voice = options.voice || POLLINATIONS_CONFIG.defaultVoice;
     const speed = options.speed || 1.15;
     const cacheKey = simpleHash(`${text}|${voice}|${speed}`);
 
     let audioBlob = this.cache.get(cacheKey);
+    if (audioBlob) return audioBlob;
 
-    if (!audioBlob) {
-      const encodedText = encodeURIComponent(text);
-      const ttsGetUrl = `https://gen.pollinations.ai/audio/${encodedText}?voice=${voice}&model=${POLLINATIONS_CONFIG.defaultTtsModel}&key=${POLLINATIONS_CONFIG.audioApiKey}`;
+    const encodedText = encodeURIComponent(text);
+    const ttsGetUrl = `https://gen.pollinations.ai/audio/${encodedText}?voice=${voice}&model=${POLLINATIONS_CONFIG.defaultTtsModel}&key=${POLLINATIONS_CONFIG.audioApiKey}`;
 
-      const maxRetries = 3;
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        if (this.isStopped) return;
-        if (attempt > 0) {
-          const waitMs = Math.min(3000 * Math.pow(2, attempt - 1), 12000);
-          console.warn(`[NeuralVoice] Retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
-          await new Promise(r => setTimeout(r, waitMs));
-        }
-
-        const res = await fetch(ttsGetUrl);
-
-        if (res.status === 429) {
-          console.warn(`[NeuralVoice] Rate limited (429) attempt ${attempt + 1}/${maxRetries}`);
-          continue;
-        }
-
-        if (!res.ok) {
-          const errText = await res.text().catch(() => '');
-          throw new Error(`TTS API ${res.status}: ${errText}`);
-        }
-        audioBlob = await res.blob();
-
-        if (audioBlob.size < 100) {
-          throw new Error('Audio blob too small');
-        }
-        break;
+    const maxRetries = 3;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      if (this.isStopped) throw new Error('Stopped');
+      if (attempt > 0) {
+        const waitMs = Math.min(3000 * Math.pow(2, attempt - 1), 12000);
+        await new Promise(r => setTimeout(r, waitMs));
       }
 
-      if (!audioBlob) throw new Error('TTS rate limited after retries');
+      const res = await fetch(ttsGetUrl);
+      if (res.status === 429) continue;
+      if (!res.ok) throw new Error(`TTS API ${res.status}`);
 
-      // FIFO eviction
+      audioBlob = await res.blob();
+      if (audioBlob.size < 100) throw new Error('Audio blob too small');
+
       if (this.cache.size >= CACHE_LIMIT) {
         const firstKey = this.cache.keys().next().value;
         if (firstKey) this.cache.delete(firstKey);
       }
       this.cache.set(cacheKey, audioBlob);
+      return audioBlob;
     }
 
-    // Play and wait for completion
+    throw new Error('TTS rate limited after retries');
+  }
+
+  private playBlob(blob: Blob): Promise<void> {
     return new Promise((resolve, reject) => {
-      const url = URL.createObjectURL(audioBlob!);
+      const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       this.currentAudio = audio;
-      audio.onerror = (e) => {
-        URL.revokeObjectURL(url);
-        reject(e);
-      };
+      audio.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
       audio.onended = () => {
         URL.revokeObjectURL(url);
         if (this.currentAudio === audio) this.currentAudio = null;
