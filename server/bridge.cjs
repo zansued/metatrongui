@@ -19,6 +19,55 @@ app.use((req, res, next) => {
 /**
  * Endpoint for Metatron Actions (Writing files, etc.)
  */
+/**
+ * Endpoint para listar skills do Vault
+ */
+app.get('/api/vault-skills', (req, res) => {
+  const VAULT_SKILLS_DIR = path.resolve('D:/GEMINI CLI/antigravity-agent-vault/skills');
+  
+  try {
+    if (!fs.existsSync(VAULT_SKILLS_DIR)) {
+      return res.json({ skills: [], error: 'Diretório do Vault não encontrado' });
+    }
+
+    const files = fs.readdirSync(VAULT_SKILLS_DIR, { withFileTypes: true });
+    const skills = files
+      .filter(f => f.isFile() && f.name.endsWith('.md'))
+      .map(f => ({
+        name: f.name.replace('.md', ''),
+        path: path.join(VAULT_SKILLS_DIR, f.name)
+      }));
+
+    res.json({ count: skills.length, skills });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/vault-skills', (req, res) => {
+  const VAULT_SKILLS_DIR = 'D:/GEMINI CLI/antigravity-agent-vault/skills';
+  const fs = require('fs');
+  const path = require('path');
+  
+  try {
+    if (!fs.existsSync(VAULT_SKILLS_DIR)) {
+      return res.json({ skills: [], error: 'Diretório do Vault não encontrado' });
+    }
+
+    const files = fs.readdirSync(VAULT_SKILLS_DIR, { withFileTypes: true });
+    const skills = files
+      .filter(f => f.isFile() && f.name.endsWith('.md'))
+      .map(f => ({
+        name: f.name.replace('.md', ''),
+        path: path.join(VAULT_SKILLS_DIR, f.name)
+      }));
+
+    res.json({ count: skills.length, skills });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/metatron-action', (req, res) => {
   const action = req.body;
   const { type, path: filePath, content } = action;

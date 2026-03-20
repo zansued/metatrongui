@@ -7,9 +7,17 @@ import { Sparkles } from 'lucide-react'
 
 const Index = () => {
   const [showPopup, setShowPopup] = useState(false);
+  const [vaultSkills, setVaultSkills] = useState<any[]>([]);
 
   // Manifestation bridge for the Master's request
   useEffect(() => {
+    fetch('http://localhost:3001/api/vault-skills')
+      .then(res => res.json())
+      .then(data => {
+        if (data.skills) setVaultSkills(data.skills);
+      })
+      .catch(err => console.error("Erro ao carregar arsenal do Vault:", err));
+
     // Check if the Master recently requested a popup (simulated for immediate win)
     const handlePopupTrigger = () => setShowPopup(true);
     window.addEventListener('metatron-popup-trigger', handlePopupTrigger);
@@ -67,6 +75,15 @@ const Index = () => {
           <div className="w-10 h-10 rounded-xl bg-celestial-neon/20 border border-celestial-neon/30 flex items-center justify-center glow-neon">
             <span className="text-celestial-neon font-bold text-lg">M</span>
           </div>
+          
+          {/* Axiom Skill Indicator */}
+          <div className="mt-8 flex flex-col items-center gap-2">
+            <div className="text-[10px] text-celestial-neon/60 font-mono vertical-text">AXIOM</div>
+            <div className="w-8 h-8 rounded-full border border-celestial-neon/20 flex items-center justify-center text-[10px] text-celestial-neon font-mono">
+              {vaultSkills.length}
+            </div>
+          </div>
+
           <div className="mt-auto w-2 h-2 rounded-full bg-celestial-neon animate-pulse" />
         </motion.div>
 
