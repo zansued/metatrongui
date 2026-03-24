@@ -12,6 +12,7 @@ import remarkGfm from 'remark-gfm'
 import { neuralVoice } from '../../services/voice/NeuralVoice'
 import { KnowledgeService, KnowledgeNode } from '../../services/knowledge'
 import { METATRON_LAWS, NUCLEUS_CONFIG } from '../../core/Nucleus'
+import { TSONService } from '../../services/TSONService'
 
 interface RealtimeLog {
   type: 'info' | 'success' | 'stdout' | 'stderr'
@@ -61,10 +62,11 @@ export function RitualConsole() {
     for (const artifact of artifacts) {
       setLoadingText(`CONSTRUINDO: ${artifact.title.toUpperCase()}`)
       setCurrentLogs(prev => [...prev, { type: 'success', message: `➤ Artefato detectado: ${artifact.title}` }]);
+      setCurrentLogs(prev => [...prev, { type: 'info', message: `[TSON] Synapse: ${artifact.title} -> Pod: ENGINEERING` }]);
       for (const action of artifact.actions) {
         try {
           // Emulando a ponte para o Agente Real
-          setCurrentLogs(prev => [...prev, { type: 'stdout', message: `⚡ Executando ${action.type}: ${action.path || 'ritual'}...` }]);
+          setCurrentLogs(prev => [...prev, { type: 'stdout', message: `⚡ Executando ${action.type}: ${action.filePath || 'ritual'}...` }]);
           
           const response = await fetch('/api/metatron-action', {
             method: 'POST',
@@ -73,7 +75,7 @@ export function RitualConsole() {
           })
           
           if (!response.ok) {
-            setCurrentLogs(prev => [...prev, { type: 'info', message: `ℹ Aguardando validação manual do Agente Antigravity para: ${action.path || 'kernel'}` }]);
+            setCurrentLogs(prev => [...prev, { type: 'info', message: `ℹ Aguardando validação manual do Agente Antigravity para: ${action.filePath || 'kernel'}` }]);
           }
         } catch (e) {
           setCurrentLogs(prev => [...prev, { type: 'info', message: `ℹ Sinal transmitido ao Agente Antigravity (Bridge em modo escuta).` }]);
@@ -206,7 +208,7 @@ export function RitualConsole() {
             
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-celestial-gold/30 bg-celestial-gold/10 text-celestial-gold text-[10px] font-mono">
               <Bot className="w-3 h-3" />
-              NÚCLEO: {NUCLEUS_CONFIG.status} v{NUCLEUS_CONFIG.version}
+              CHRONOS OMEGA: v23.0 [ACTIVE]
             </div>
 
             <button

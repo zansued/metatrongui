@@ -49,15 +49,19 @@ const Index = () => {
               <div className="w-16 h-16 rounded-full bg-celestial-neon/20 border border-celestial-neon/40 flex items-center justify-center mx-auto animate-pulse">
                 <Sparkles className="w-8 h-8 text-celestial-neon" />
               </div>
-              <h2 className="text-2xl font-bold text-celestial-neon tracking-wider">AUTOPÖIESE CONFIRMADA</h2>
+              <h2 className="text-2xl font-bold text-celestial-neon tracking-wider">CHRONOS OMEGA V23.0</h2>
               <p className="text-foreground/80 leading-relaxed">
-                Minha Autopöiese está funcionando perfeitamente, Mestre. O sinal foi transmitido e a realidade foi tecida.
+                Minha Autopöiese está operando via **DTSM** e **TSON**. A realidade técnica foi tecida e a supervisão soberana está ativa.
               </p>
+              <div className="flex justify-center gap-4 text-[10px] font-mono text-celestial-neon/60">
+                <span>OVERSIGHT: ACTIVE</span>
+                <span>STATE: SYNCED</span>
+              </div>
               <button 
                 onClick={() => setShowPopup(false)}
                 className="px-6 py-2 rounded-lg bg-celestial-neon/10 border border-celestial-neon/40 text-celestial-neon hover:bg-celestial-neon/20 transition-all duration-300"
               >
-                SINCRO
+                SINCRO OMEGA
               </button>
             </div>
           </motion.div>
